@@ -44,9 +44,6 @@ create table games (
     created_at timestamp not null default current_timestamp
 );
 
-alter table games add foreign key (developer_id) references companies(company_id) on delete set null on update cascade;
-alter table games add foreign key (publisher_id) references companies(company_id) on delete set null on update cascade;
-
 create table game_genres (
     game_id int not null,
     genre_id int not null,
@@ -95,16 +92,6 @@ create table user_profiles (
     birth_date date,
     country varchar(50),
     about text,
-    created_at timestamp not null default current_timestamp,
-    foreign key (user_id) references users(user_id) on delete cascade
-);
-
-create table user_profiles (
-    user_id int primary key,
-    avatar_url varchar(255),
-    birth_date date check (birth_date <= current_date),
-    country varchar(50),
-    website varchar(255),
     created_at timestamp not null default current_timestamp,
     foreign key (user_id) references users(user_id) on delete cascade
 );

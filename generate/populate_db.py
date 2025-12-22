@@ -4,25 +4,37 @@ from tqdm import tqdm
 import random
 from datetime import date, timedelta
 import logging
+from dotenv import load_dotenv
+from urllib.parse import urlparse
+import os
+
 
 fake = Faker('ru_RU')
 
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+print(DATABASE_URL)
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL не задан!")
+
+parsed = urlparse(DATABASE_URL)
+
 DB_PARAMS = {
-    'dbname': 'game_portal_db',
-    'user': 'postgres',
-    'password': '9595959540',
-    'host': 'localhost',
-    'port': 5445
+    'host': parsed.hostname,
+    'port': parsed.port or 5432,
+    'database': parsed.path[1:],
+    'user': parsed.username,
+    'password': parsed.password
 }
 
-# Количество записей
 NUM_USERS = 1000
-NUM_COMPANIES = 500
-NUM_GENRES = 30
-NUM_PLATFORMS = 20
-NUM_GAMES = 5000
-NUM_PROGRESS = 50000
-NUM_REVIEWS = 40000
+NUM_COMPANIES = 800
+NUM_GENRES = 35
+NUM_PLATFORMS = 25
+NUM_GAMES = 8000
+NUM_PROGRESS = 10000
+NUM_REVIEWS = 8000
 
 def connect_db():
     return psycopg2.connect(**DB_PARAMS)
