@@ -1,0 +1,25 @@
+# Секреты и конфиги
+.env
+*.env
+
+# Python кэш
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtualenv
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+*.sublime-workspace
+
+# Docker volumes (не коммитим данные)
+postgres_data/
+
+# Логи и временные файлы
+*.log
+temp/
