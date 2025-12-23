@@ -4,7 +4,7 @@ from typing import List
 
 from ..database import get_db
 from ..models import Game as GameModel
-from ..schemas import Game as GameSchema, GameCreate
+from ..schemas import Game as GameSchema, GameCreate, GameUpdate, GameOut
 
 router = APIRouter(
     prefix="/games",
@@ -35,6 +35,38 @@ def get_game(game_id: int, db: Session = Depends(get_db)):
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
     return game
+
+
+@router.put("/{game_id}", response_model=GameOut)
+def update_game(
+    game_id: int,
+    game_data: GameUpdate,
+    db: Session = Depends(get_db)
+):
+    game = db.query(GameModel).filter(GameModel.game_id == game_id).first()
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    for field, value in game_data.dict(exclude_unset=True).items():
+        setattr(game, field, value)
+
+    db.commit()
+    db.refresh(game)
+    return game
+
+
+@router.delete("/{game_id}", status_code=204)
+def delete_game(
+    game_id: int,
+    db: Session = Depends(get_db)
+):
+    game = db.query(GameModel).filter(GameModel.game_id == game_id).first()
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    db.delete(game)
+    db.commit()
+
 
 
 @router.get("/", response_model=List[GameSchema])

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date, datetime
 from typing import Optional
 
@@ -80,3 +80,19 @@ class PopularGameView(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GameUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    release_date: Optional[date] = None
+    developer_id: Optional[int] = None
+    publisher_id: Optional[int] = None
+
+class GameOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    game_id: int
+    title: str
+    description: str | None
+    release_date: date
+    developer_id: int
+    publisher_id: int
