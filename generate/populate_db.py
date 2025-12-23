@@ -164,7 +164,6 @@ def populate_progress_and_reviews():
     games = [row[0] for row in cur.fetchall()]
     statuses = ['Playing', 'Completed', 'Planned', 'Dropped']
 
-    # Прогресс
     for _ in tqdm(range(NUM_PROGRESS), desc="Прогресс"):
         user_id = random.choice(users)
         game_id = random.choice(games)
@@ -176,7 +175,6 @@ def populate_progress_and_reviews():
             ON CONFLICT (user_id, game_id) DO NOTHING
         """, (user_id, game_id, status, hours))
 
-    # Отзывы
     for _ in tqdm(range(NUM_REVIEWS), desc="Отзывы"):
         user_id = random.choice(users)
         game_id = random.choice(games)
@@ -205,7 +203,6 @@ def populate_game_connections():
     cur.execute("SELECT platform_id FROM platforms")
     platforms = [row[0] for row in cur.fetchall()]
 
-    # game_genres: каждой игре 1–5 случайных жанров
     for game_id in tqdm(games, desc="game_genres"):
         num_genres = random.randint(1, min(5, len(genres)))
         chosen_genres = random.sample(genres, num_genres)
@@ -216,7 +213,6 @@ def populate_game_connections():
                 ON CONFLICT DO NOTHING
             """, (game_id, genre_id))
 
-    # game_platforms: каждой игре 1–4 платформы
     for game_id in tqdm(games, desc="game_platforms"):
         num_platforms = random.randint(1, min(4, len(platforms)))
         chosen_platforms = random.sample(platforms, num_platforms)
