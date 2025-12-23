@@ -122,7 +122,6 @@ end;
 $$ language plpgsql;
 
 create trigger audit_users after insert or update or delete on users for each row execute function audit_trigger_func();
-create trigger audit_games after insert or update or delete on games for each row execute function audit_trigger_func();
 create trigger audit_progress after insert or update or delete on user_game_progress for each row execute function audit_trigger_func();
 create trigger audit_reviews after insert or update or delete on reviews for each row execute function audit_trigger_func();
 
