@@ -15,7 +15,7 @@ create table companies (
     founded_year int check (founded_year > 1900 and founded_year <= extract(year from current_date)),
     country varchar(50),
     website varchar(255),
-    role varchar(20) not null check (role in ('developer', 'publisher', 'both')),
+    role varchar(20) not null check (role in ('Developer', 'Publisher', 'Both')),
     created_at timestamp not null default current_timestamp
 );
 
@@ -67,7 +67,7 @@ create table user_game_progress (
     progress_id serial primary key,
     user_id int not null,
     game_id int not null,
-    status varchar(20) not null check (status in ('playing', 'completed', 'planned', 'dropped')),
+    status varchar(20) not null check (status in ('Playing', 'Completed', 'Planned', 'Dropped')),
     hours_played int default 0 check (hours_played >= 0),
     last_played timestamp,
     last_updated timestamp not null default current_timestamp,
@@ -102,7 +102,7 @@ create table user_profiles (
 create table audit_logs (
     log_id serial primary key,
     table_name varchar(50) not null,
-    operation varchar(10) not null check (operation in ('insert', 'update', 'delete')),
+    operation char(7) not null check (operation in ('INSERT', 'UPDATE', 'DELETE')),
     user_id varchar(50) not null default current_user,
     record_id int,
     old_data jsonb,
@@ -115,7 +115,7 @@ create or replace function audit_trigger_func() returns trigger as $$
 begin
     insert into audit_logs (table_name, operation, user_id, record_id, old_data, new_data, changed_at)
     values (tg_relname, tg_op, current_user,
-           case when tg_op = 'delete' then old.user_id else new.user_id end,
+           case when tg_op = 'DELETE' then old.user_id else new.user_id end,
            row_to_json(old)::jsonb, row_to_json(new)::jsonb, current_timestamp);
     return null;
 end;
@@ -132,7 +132,7 @@ create or replace function update_game_aggregates() returns trigger as $$
 declare
     gid integer;
 begin
-    if tg_op = 'delete' then
+    if tg_op = 'DELETE' then
         gid := old.game_id;
     else
         gid := new.game_id;
@@ -153,7 +153,7 @@ create or replace function update_user_total_hours() returns trigger as $$
 declare
     uid integer;
 begin
-    if tg_op = 'delete' then
+    if tg_op = 'DELETE' then
         uid := old.user_id;
     else
         uid := new.user_id;
@@ -229,7 +229,7 @@ group by g.game_id;
 create or replace view user_stats_view as
 select u.user_id, u.username, u.registration_date,
        count(ugp.progress_id) as total_games,
-       count(case when ugp.status = 'completed' then 1 end) as completed_games,
+       count(case when ugp.status = 'Completed' then 1 end) as completed_games,
        coalesce(sum(ugp.hours_played), 0) as total_hours
 from users u
 left join user_game_progress ugp on u.user_id = ugp.user_id
@@ -245,6 +245,7 @@ left join reviews r on g.game_id = r.game_id and r.is_approved = true
 group by g.game_id
 order by players_count desc
 limit 10;
+
 
 
 create index if not exists idx_games_developer on games(developer_id);
@@ -266,6 +267,7 @@ create index if not exists idx_user_progress_last_updated on user_game_progress(
 create index if not exists idx_game_genres_genre_game on game_genres(genre_id, game_id);
 
 create index if not exists idx_reviews_game_created on reviews(game_id, created_at desc);
+
 
 
 explain analyze
@@ -312,8 +314,8 @@ join user_game_progress ugp on u.user_id = ugp.user_id
 join games g on ugp.game_id = g.game_id
 join game_genres gg on g.game_id = gg.game_id
 join genres gen on gg.genre_id = gen.genre_id
-where gen.name = 'rpg'
-  and ugp.status = 'completed'
+where gen.name = 'RPG'
+  and ugp.status = 'COMPLETED'
   and g.release_date > '2010-01-01'
 group by u.user_id, u.username
 having sum(ugp.hours_played) > 50
