@@ -6,17 +6,11 @@ from ..database import get_db
 from ..models import Game
 from ..schemas import GameCreate
 
-router = APIRouter(
-    prefix="/batch",
-    tags=["Batch"]
-)
+router = APIRouter(prefix="/batch", tags=["Batch"])
 
 
 @router.post("/games")
-def batch_insert_games(
-    games: List[GameCreate],
-    db: Session = Depends(get_db)
-):
+def batch_insert_games(games: List[GameCreate], db: Session = Depends(get_db)):
     inserted = 0
 
     for game in games:

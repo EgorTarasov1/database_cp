@@ -6,10 +6,7 @@ from .. import crud, schemas
 from ..database import get_db
 from ..models import User
 
-router = APIRouter(
-    prefix="/users",
-    tags=["Users"]
-)
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post("/", response_model=schemas.User)

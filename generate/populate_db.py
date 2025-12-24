@@ -147,7 +147,7 @@ def populate_games():
         raise ValueError("Нет компаний в базе! Сначала заполните companies.")
 
     inserted = 0
-    for _ in tqdm(range(NUM_GAMES * 2), desc="Игры"):  # *2 для компенсации конфликтов по title
+    for _ in tqdm(range(NUM_GAMES * 2), desc="Игры"):
         if inserted >= NUM_GAMES:
             break
         title = fake.catch_phrase()[:100]

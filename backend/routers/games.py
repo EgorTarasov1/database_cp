@@ -6,19 +6,12 @@ from ..database import get_db
 from ..models import Game as GameModel
 from ..schemas import Game as GameSchema, GameCreate, GameUpdate, GameOut
 
-router = APIRouter(
-    prefix="/games",
-    tags=["Games"]
-)
+router = APIRouter(prefix="/games", tags=["Games"])
 
 
 @router.post("/", response_model=GameSchema)
 def create_game(game: GameCreate, db: Session = Depends(get_db)):
-    existing_game = (
-        db.query(GameModel)
-        .filter(GameModel.title == game.title)
-        .first()
-    )
+    existing_game = (db.query(GameModel).filter(GameModel.title == game.title).first())
     if existing_game:
         raise HTTPException(status_code=400, detail="Game already exists")
 
@@ -38,11 +31,7 @@ def get_game(game_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{game_id}", response_model=GameOut)
-def update_game(
-    game_id: int,
-    game_data: GameUpdate,
-    db: Session = Depends(get_db)
-):
+def update_game(game_id: int, game_data: GameUpdate, db: Session = Depends(get_db)):
     game = db.query(GameModel).filter(GameModel.game_id == game_id).first()
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -56,10 +45,7 @@ def update_game(
 
 
 @router.delete("/{game_id}", status_code=204)
-def delete_game(
-    game_id: int,
-    db: Session = Depends(get_db)
-):
+def delete_game(game_id: int, db: Session = Depends(get_db)):
     game = db.query(GameModel).filter(GameModel.game_id == game_id).first()
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")

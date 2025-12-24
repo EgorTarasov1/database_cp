@@ -11,9 +11,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
-def get_game(db: Session, game_id: int):
-    return db.query(models.Game).filter(models.Game.game_id == game_id).first()
-
 def create_review(db: Session, review: schemas.ReviewCreate, user_id: int):
     db_review = models.Review(**review.dict(), user_id=user_id)
     db.add(db_review)

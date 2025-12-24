@@ -4,16 +4,9 @@ from sqlalchemy import text
 from typing import List
 
 from ..database import get_db
-from ..schemas import (
-    GameRatingView,
-    UserStatsView,
-    PopularGameView
-)
+from ..schemas import (GameRatingView, UserStatsView, PopularGameView)
 
-router = APIRouter(
-    prefix="/views",
-    tags=["Views (read-only)"]
-)
+router = APIRouter(prefix="/views", tags=["Views (read-only)"])
 
 
 @router.get("/game-ratings", response_model=List[GameRatingView])
