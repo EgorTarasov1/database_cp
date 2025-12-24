@@ -15,7 +15,6 @@ create table companies (
     founded_year int check (founded_year > 1900 and founded_year <= extract(year from current_date)),
     country varchar(50),
     website varchar(255),
-    role varchar(20) not null check (role in ('Developer', 'Publisher', 'Both')),
     created_at timestamp not null default current_timestamp
 );
 
@@ -40,11 +39,11 @@ create table games (
     title varchar(100) not null unique,
     description text not null,
     release_date date,
-    developer_id int,
-    publisher_id int,
+    company_id int not null,
     created_at timestamp not null default current_timestamp,
     average_rating numeric(3,2) default 0.0,
-    review_count integer default 0
+    review_count integer default 0,
+    foreign key (company_id) references companies(company_id) on delete restrict on update cascade
 );
 
 create table game_genres (
@@ -247,8 +246,7 @@ limit 10;
 
 
 
-create index if not exists idx_games_developer on games(developer_id);
-create index if not exists idx_games_publisher on games(publisher_id);
+create index if not exists idx_games_company on games(company_id);
 
 create index if not exists idx_user_progress_user on user_game_progress(user_id);
 create index if not exists idx_user_progress_game on user_game_progress(game_id);
@@ -293,11 +291,11 @@ select * from popular_games_view;
 explain analyze
 select
     g.title,
-    c.name as developer,
+    c.name as company,
     count(r.review_id) as review_count,
     avg(r.rating) as avg_rating
 from games g
-join companies c on g.developer_id = c.company_id
+join companies c on g.company_id = c.company_id
 left join reviews r on g.game_id = r.game_id and r.is_approved = true
 where g.release_date > '2020-01-01'
   and g.title ilike '%game%'

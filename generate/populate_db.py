@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 import os
 
-
 fake = Faker('ru_RU')
 
 load_dotenv()
@@ -36,8 +35,10 @@ NUM_GAMES = 8000
 NUM_PROGRESS = 10000
 NUM_REVIEWS = 8000
 
+
 def connect_db():
     return psycopg2.connect(**DB_PARAMS)
+
 
 def clear_tables():
     conn = connect_db()
@@ -52,6 +53,7 @@ def clear_tables():
     cur.close()
     conn.close()
     print("Все таблицы очищены.")
+
 
 def populate_users():
     conn = connect_db()
@@ -77,34 +79,34 @@ def populate_users():
     conn.close()
     print(f"Успешно добавлено {inserted} пользователей.")
 
+
 def populate_companies():
     conn = connect_db()
     cur = conn.cursor()
-    roles = ['Developer', 'Publisher', 'Both']
     for _ in tqdm(range(NUM_COMPANIES), desc="Компании"):
         name = fake.company()[:100]
         year = random.randint(1901, date.today().year)
         country = fake.country()[:50]
         website = fake.url()
-        role = random.choice(roles)
         cur.execute("""
-            INSERT INTO companies (name, founded_year, country, website, role)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO companies (name, founded_year, country, website)
+            VALUES (%s, %s, %s, %s)
             ON CONFLICT (name) DO NOTHING
-        """, (name, year, country, website, role))
+        """, (name, year, country, website))
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Добавлено {NUM_COMPANIES} компаний.")
+    print(f"Добавлено до {NUM_COMPANIES} компаний.")
+
 
 def populate_genres():
     conn = connect_db()
     cur = conn.cursor()
     genres = [
-        "Action", "Adventure", "RPG", "Shooter", "Strategy", "Simulation",
-        "Sports", "Puzzle", "Racing", "Horror", "Platformer", "Fighting",
-        "MMO", "Indie", "Open World", "Survival", "Stealth", "Metroidvania"
-    ] + [fake.word().capitalize() for _ in range(NUM_GENRES - 18)]
+                 "Action", "Adventure", "RPG", "Shooter", "Strategy", "Simulation",
+                 "Sports", "Puzzle", "Racing", "Horror", "Platformer", "Fighting",
+                 "MMO", "Indie", "Open World", "Survival", "Stealth", "Metroidvania"
+             ] + [fake.word().capitalize() for _ in range(NUM_GENRES - 18)]
     for name in tqdm(genres[:NUM_GENRES], desc="Жанры"):
         desc = fake.sentence(nb_words=10)
         cur.execute("""
@@ -116,6 +118,7 @@ def populate_genres():
     cur.close()
     conn.close()
     print(f"Добавлено {NUM_GENRES} жанров.")
+
 
 def populate_platforms():
     conn = connect_db()
@@ -134,26 +137,41 @@ def populate_platforms():
     conn.close()
     print(f"Добавлено {NUM_PLATFORMS} платформ.")
 
+
 def populate_games():
     conn = connect_db()
     cur = conn.cursor()
     cur.execute("SELECT company_id FROM companies")
     companies = [row[0] for row in cur.fetchall()]
-    for _ in tqdm(range(NUM_GAMES), desc="Игры"):
+    if not companies:
+        raise ValueError("Нет компаний в базе! Сначала заполните companies.")
+
+    inserted = 0
+    for _ in tqdm(range(NUM_GAMES * 2), desc="Игры"):  # *2 для компенсации конфликтов по title
+        if inserted >= NUM_GAMES:
+            break
         title = fake.catch_phrase()[:100]
         desc = fake.text(max_nb_chars=500)
-        release = fake.date_between(start_date=date(1990,1,1), end_date=date.today())
-        dev_id = random.choice(companies)
-        pub_id = random.choice(companies)
-        cur.execute("""
-            INSERT INTO games (title, description, release_date, developer_id, publisher_id)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (title) DO NOTHING
-        """, (title, desc, release, dev_id, pub_id))
-    conn.commit()
+        release = fake.date_between(start_date=date(1990, 1, 1), end_date=date.today())
+        company_id = random.choice(companies)
+
+        try:
+            cur.execute("""
+                INSERT INTO games (title, description, release_date, company_id)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (title) DO NOTHING
+            """, (title, desc, release, company_id))
+            if cur.rowcount > 0:
+                inserted += 1
+            conn.commit()
+        except psycopg2.IntegrityError as e:
+            conn.rollback()
+            continue
+
     cur.close()
     conn.close()
-    print(f"Добавлено {NUM_GAMES} игр.")
+    print(f"Успешно добавлено {inserted} игр.")
+
 
 def populate_progress_and_reviews():
     conn = connect_db()
@@ -162,6 +180,10 @@ def populate_progress_and_reviews():
     users = [row[0] for row in cur.fetchall()]
     cur.execute("SELECT game_id FROM games")
     games = [row[0] for row in cur.fetchall()]
+    if not users or not games:
+        print("Нет пользователей или игр — пропускаем прогресс и отзывы.")
+        return
+
     statuses = ['Playing', 'Completed', 'Planned', 'Dropped']
 
     for _ in tqdm(range(NUM_PROGRESS), desc="Прогресс"):
@@ -190,7 +212,7 @@ def populate_progress_and_reviews():
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Добавлено {NUM_PROGRESS} прогрессов и {NUM_REVIEWS} отзывов.")
+    print(f"Добавлено прогрессов и отзывов.")
 
 
 def populate_game_connections():
@@ -257,7 +279,8 @@ def populate_user_profiles():
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Добавлено {inserted} профилей пользователей (из {len(users)} возможных).")
+    print(f"Добавлено {inserted} профилей пользователей.")
+
 
 def disable_triggers():
     conn = connect_db()
@@ -267,6 +290,7 @@ def disable_triggers():
         cur.execute(f"ALTER TABLE {table} DISABLE TRIGGER ALL;")
     conn.commit()
     print("Триггеры отключены")
+
 
 def enable_triggers():
     conn = connect_db()

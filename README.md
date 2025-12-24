@@ -1,7 +1,5 @@
 # Game Portal DB — Курсовой проект по базам данных
 
-Простой README с инструкцией по запуску проекта.
-
 ## Требования
 
 - Docker и Docker Compose (рекомендуется)
@@ -41,7 +39,6 @@
    Наконец, вернитесь в корневую папку и выполните запуск сервера:
    ```bash
    cd ../
-   pip install -r requirements.txt
    uvicorn backend.main:app --reload
    ```  
    

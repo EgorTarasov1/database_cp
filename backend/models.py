@@ -25,16 +25,24 @@ class Game(Base):
     title = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=False)
     release_date = Column(Date)
-
-    # Просто числа, БЕЗ ForeignKey — никакой проверки на companies
-    developer_id = Column(Integer, nullable=True)  # можно NULL
-    publisher_id = Column(Integer, nullable=True)  # можно NULL
-
+    company_id = Column(Integer, ForeignKey("companies.company_id", ondelete="RESTRICT"), nullable=False)
     created_at = Column(DateTime, server_default=func.current_timestamp())
+    company = relationship("Company", back_populates="games")
 
     progress = relationship("UserGameProgress", back_populates="game")
     reviews = relationship("Review", back_populates="game")
 
+
+class Company(Base):
+    __tablename__ = "companies"
+
+    company_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+    founded_year = Column(Integer)
+    country = Column(String(50))
+    website = Column(String(255))
+    created_at = Column(DateTime, server_default=func.current_timestamp())
+    games = relationship("Game", back_populates="company")
 
 class UserGameProgress(Base):
     __tablename__ = "user_game_progress"

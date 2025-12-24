@@ -23,11 +23,11 @@ class GameBase(BaseModel):
     release_date: Optional[date] = None
 
 class GameCreate(GameBase):
-    developer_id: Optional[int] = None
-    publisher_id: Optional[int] = None
+    company_id: int
 
 class Game(GameBase):
     game_id: int
+    company_id: int
     created_at: datetime
 
     class Config:
@@ -85,14 +85,12 @@ class GameUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     release_date: Optional[date] = None
-    developer_id: Optional[int] = None
-    publisher_id: Optional[int] = None
+    company_id: Optional[int] = None
 
 class GameOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     game_id: int
     title: str
     description: str | None
-    release_date: date
-    developer_id: int
-    publisher_id: int
+    release_date: date | None
+    company_id: int
