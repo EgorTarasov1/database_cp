@@ -110,16 +110,38 @@ create table audit_logs (
 
 
 create or replace function audit_trigger_func() returns trigger as $$
+declare
+    rec_id integer;
 begin
+    if tg_relname = 'users' then
+        rec_id := coalesce(new.user_id, old.user_id);
+    elsif tg_relname = 'games' then
+        rec_id := coalesce(new.game_id, old.game_id);
+    elsif tg_relname = 'user_game_progress' then
+        rec_id := coalesce(new.progress_id, old.progress_id);
+    elsif tg_relname = 'reviews' then
+        rec_id := coalesce(new.review_id, old.review_id);
+    else
+        rec_id := null;
+    end if;
+
     insert into audit_logs (table_name, operation, user_id, record_id, old_data, new_data, changed_at)
-    values (tg_relname, tg_op, current_user,
-           case when tg_op = 'DELETE' then old.user_id else new.user_id end,
-           row_to_json(old)::jsonb, row_to_json(new)::jsonb, current_timestamp);
+    values (
+        tg_relname,
+        tg_op,
+        current_user,
+        rec_id,
+        row_to_json(old)::jsonb,
+        row_to_json(new)::jsonb,
+        current_timestamp
+    );
+
     return null;
 end;
 $$ language plpgsql;
 
 create trigger audit_users after insert or update or delete on users for each row execute function audit_trigger_func();
+create trigger audit_users after insert or update or delete on games for each row execute function audit_trigger_func();
 create trigger audit_progress after insert or update or delete on user_game_progress for each row execute function audit_trigger_func();
 create trigger audit_reviews after insert or update or delete on reviews for each row execute function audit_trigger_func();
 
