@@ -4,7 +4,7 @@ from typing import List
 
 from ..database import get_db
 from ..models import Game as GameModel
-from ..schemas import Game as GameSchema, GameCreate, GameUpdate, GameOut
+from ..schemas import Game as GameSchema, GameCreate, GameUpdate, GameOut, GameDetail
 
 router = APIRouter(prefix="/games", tags=["Games"])
 
@@ -22,7 +22,7 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     return new_game
 
 
-@router.get("/{game_id}", response_model=GameSchema)
+@router.get("/{game_id}", response_model=GameDetail)
 def get_game(game_id: int, db: Session = Depends(get_db)):
     game = db.query(GameModel).filter(GameModel.game_id == game_id).first()
     if not game:

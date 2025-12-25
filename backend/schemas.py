@@ -94,3 +94,44 @@ class GameOut(BaseModel):
     description: str | None
     release_date: date | None
     company_id: int
+
+
+
+class GameRatingResponse(BaseModel):
+    rating: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserTotalHoursResponse(BaseModel):
+    total_hours: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class TopPlayerByGenre(BaseModel):
+    user_id: int
+    username: str
+    total_hours: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserActivityEntry(BaseModel):
+    user_id: int
+    username: str
+    activity_date: date
+    hours_played: int
+    reviews_written: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GameDetail(BaseModel):
+    game_id: int
+    title: str
+    description: str
+    release_date: Optional[date] = None
+    company_id: int
+    created_at: datetime
+    average_rating: float
+    review_count: int
+
+    model_config = ConfigDict(from_attributes=True)
