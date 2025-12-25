@@ -79,7 +79,7 @@ create table reviews (
     review_id serial primary key,
     user_id int not null,
     game_id int not null,
-    rating int not null check (rating between 0 and 10),
+    rating int not null check (rating between 1 and 10),
     review_text text not null,
     created_at timestamp not null default current_timestamp,
     is_approved boolean not null default true,
@@ -121,7 +121,6 @@ end;
 $$ language plpgsql;
 
 create trigger audit_users after insert or update or delete on users for each row execute function audit_trigger_func();
-create trigger audit_reviews after insert or update or delete on games for each row execute function audit_trigger_func();
 create trigger audit_progress after insert or update or delete on user_game_progress for each row execute function audit_trigger_func();
 create trigger audit_reviews after insert or update or delete on reviews for each row execute function audit_trigger_func();
 
@@ -313,7 +312,7 @@ join games g on ugp.game_id = g.game_id
 join game_genres gg on g.game_id = gg.game_id
 join genres gen on gg.genre_id = gen.genre_id
 where gen.name = 'RPG'
-  and ugp.status = 'COMPLETED'
+  and ugp.status = 'Completed'
   and g.release_date > '2010-01-01'
 group by u.user_id, u.username
 having sum(ugp.hours_played) > 50
