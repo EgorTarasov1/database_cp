@@ -6,7 +6,6 @@ from ..database import get_db
 from ..models import Review as ReviewModel
 from ..models import Game
 from ..schemas import Review as ReviewSchema, ReviewCreate
-from ..crud import create_review
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
@@ -17,7 +16,11 @@ def add_review(user_id: int, review: ReviewCreate, db: Session = Depends(get_db)
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
 
-    return create_review(db=db, review=review, user_id=user_id)
+    db_review = ReviewModel(**review.dict(), user_id=user_id)
+    db.add(db_review)
+    db.commit()
+    db.refresh(db_review)
+    return db_review
 
 
 @router.get("/game/{game_id}", response_model=List[ReviewSchema])
