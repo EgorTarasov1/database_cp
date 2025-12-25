@@ -257,29 +257,22 @@ def populate_user_profiles():
     cur.execute("SELECT user_id FROM users")
     users = [row[0] for row in cur.fetchall()]
 
-    inserted = 0
     for user_id in tqdm(users, desc="User Profiles"):
         avatar_url = fake.image_url(width=200, height=200) if random.random() > 0.7 else None
         birth_date = fake.date_of_birth(minimum_age=13, maximum_age=80) if random.random() > 0.6 else None
         country = fake.country()[:50] if random.random() > 0.4 else None
+        about = fake.paragraph(nb_sentences=3) if random.random() > 0.5 else None
 
-        try:
-            cur.execute("""
-                INSERT INTO user_profiles (user_id, avatar_url, birth_date, country)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (user_id) DO NOTHING
-            """, (user_id, avatar_url, birth_date, country))
-            if cur.rowcount > 0:
-                inserted += 1
-        except psycopg2.Error as e:
-            conn.rollback()
-            print(f"Ошибка при вставке профиля {user_id}: {e}")
-            continue
+        cur.execute("""
+            INSERT INTO user_profiles (user_id, avatar_url, birth_date, country, about)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (user_id) DO NOTHING
+        """, (user_id, avatar_url, birth_date, country, about))
 
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Добавлено {inserted} профилей пользователей.")
+    print("Профили пользователей заполнены.")
 
 
 def disable_triggers():

@@ -38,7 +38,7 @@ create table games (
     game_id serial primary key,
     title varchar(100) not null unique,
     description text not null,
-    release_date date,
+    release_date date not null,
     company_id int not null,
     created_at timestamp not null default current_timestamp,
     average_rating numeric(3,2) default 0.0,
@@ -94,7 +94,6 @@ create table user_profiles (
     birth_date date,
     country varchar(50),
     about text,
-    created_at timestamp not null default current_timestamp,
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -248,17 +247,18 @@ limit 10;
 
 create index if not exists idx_games_company on games(company_id);
 
-create index if not exists idx_user_progress_user on user_game_progress(user_id);
+create index if not exists idx_reviews_game_approved_rating on reviews (game_id, is_approved) include (rating);
+
+create index if not exists idx_user_progress_user_hours on user_game_progress (user_id) include (hours_played);
+
 create index if not exists idx_user_progress_game on user_game_progress(game_id);
 
-create index if not exists idx_reviews_game on reviews(game_id);
 create index if not exists idx_reviews_user on reviews(user_id);
 
 create index if not exists idx_games_release_date on games(release_date);
 create index if not exists idx_genres_name on genres(name);
 create index if not exists idx_games_title on games(title);
 
-create index if not exists idx_reviews_game_approved on reviews(game_id) where is_approved = true;
 create index if not exists idx_reviews_created_at on reviews(created_at);
 create index if not exists idx_user_progress_last_updated on user_game_progress(last_updated);
 create index if not exists idx_game_genres_genre_game on game_genres(genre_id, game_id);
